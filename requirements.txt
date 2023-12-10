@@ -1,0 +1,6 @@
+cryptography
+pillow
+qrcode
+md5
+AES
+pyzbar
