@@ -15,6 +15,10 @@
 
 ## before using script change password in main.py file:
 ```password = 'YOUR_STRONG_PASSWORD'```
+### install requirement packages
+```
+pip3 install -r requirements.txt
+```
 
 sample example:
 for encryption
