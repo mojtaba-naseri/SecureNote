@@ -107,63 +107,63 @@ def cleanup():
 # cleanup
 cleanup()
 
+if __name__ == '__main__':
+    password = 'YOUR_STRONG_PASSWORD' #shouldn't be something this simple
 
-password = 'YOUR_STRONG_PASSWORD' #shouldn't be something this simple
+    mode = sys.argv[1] if len(sys.argv[1]) >= 7 else exit(1)
+    file_name = sys.argv[2] if len(sys.argv[2]) >= 3 else exit(1)
+    if os.path.isfile(file_name):
+        ## encrypt mode description
+        if "encrypt" in mode:
+            # split file into some files that each file has 4 lines
+            spliter(file_name)
+            files = [f for f in os.listdir('.') if f.endswith('.text')]
+            # encrypt each file with password and AES
+            for file in files:
+                with open(file, 'rb') as in_file, open(file+'-encrypted', 'wb') as out_file:
+                    encrypt(in_file, out_file, password)
 
-mode = sys.argv[1] if len(sys.argv[1]) >= 7 else exit(1)
-file_name = sys.argv[2] if len(sys.argv[2]) >= 3 else exit(1)
-if os.path.isfile(file_name):
-    ## encrypt mode description
-    if "encrypt" in mode:
-        # split file into some files that each file has 4 lines
-        spliter(file_name)
-        files = [f for f in os.listdir('.') if f.endswith('.text')]
-        # encrypt each file with password and AES 
-        for file in files:
-            with open(file, 'rb') as in_file, open(file+'-encrypted', 'wb') as out_file:
-                encrypt(in_file, out_file, password)
-            
-                
-            # encode each encrypted file with base64
-            with open (file+'-encrypted', 'rb') as encrypted_file, open(file+'-encrypted-encoded-base64', 'wb') as encrypted_file_base64:
-                encoded_data = base64.b64encode(encrypted_file.read())
-                encrypted_file_base64.write(encoded_data)
 
-            # generate qrcode from every base64 files
-            qrcode_generator(str(file)+'-encrypted-encoded-base64')
-            os.remove(file)
-            os.remove(file+'-encrypted')
+                # encode each encrypted file with base64
+                with open (file+'-encrypted', 'rb') as encrypted_file, open(file+'-encrypted-encoded-base64', 'wb') as encrypted_file_base64:
+                    encoded_data = base64.b64encode(encrypted_file.read())
+                    encrypted_file_base64.write(encoded_data)
 
-        files = [f for f in os.listdir('.') if f.endswith('.png')]
-        for file in files:
-            add_text_to_qrcode(file)
+                # generate qrcode from every base64 files
+                qrcode_generator(str(file)+'-encrypted-encoded-base64')
+                os.remove(file)
+                os.remove(file+'-encrypted')
 
-    # decrypt mode description
-    elif "decrypt" in mode:
-        # read qrcode from every base64 files
-        for input_file in sorted(glob.glob('*.text-encrypted-encoded-base64.png')):
-            with open(input_file, 'rb') as in_file, open(input_file.replace(".png",""), 'wb') as out_file:
-                converted_png = qrcode_convertor(in_file)
-                out_file.write(converted_png.encode())
-                os.remove(input_file)
-        
-        
-        # decode each encrypted files with base64
-        for input_file in sorted(glob.glob('*.text-encrypted-encoded-base64')):
-            with open(input_file, 'rb') as in_file, open(input_file.replace("encrypted-encoded-base64","encrypted-decoded-base64"), 'wb') as decrypted_file_base64:
-                decoded_data = base64.b64decode(in_file.read())
-                decrypted_file_base64.write(decoded_data)
-                os.remove(input_file)
+            files = [f for f in os.listdir('.') if f.endswith('.png')]
+            for file in files:
+                add_text_to_qrcode(file)
 
-        # decrypt each file with password and AES 
-        for input_file in sorted(glob.glob('*.text-encrypted-decoded-base64')):
-            with open(input_file, 'rb') as in_file, open(input_file.replace("encrypted","decrypted"), 'wb') as out_file:
-                decrypt(in_file, out_file, password)
-                os.remove(input_file)
+        # decrypt mode description
+        elif "decrypt" in mode:
+            # read qrcode from every base64 files
+            for input_file in sorted(glob.glob('*.text-encrypted-encoded-base64.png')):
+                with open(input_file, 'rb') as in_file, open(input_file.replace(".png",""), 'wb') as out_file:
+                    converted_png = qrcode_convertor(in_file)
+                    out_file.write(converted_png.encode())
+                    os.remove(input_file)
 
-        # concatenation files into 1 file
-        concatenation()
+
+            # decode each encrypted files with base64
+            for input_file in sorted(glob.glob('*.text-encrypted-encoded-base64')):
+                with open(input_file, 'rb') as in_file, open(input_file.replace("encrypted-encoded-base64","encrypted-decoded-base64"), 'wb') as decrypted_file_base64:
+                    decoded_data = base64.b64decode(in_file.read())
+                    decrypted_file_base64.write(decoded_data)
+                    os.remove(input_file)
+
+            # decrypt each file with password and AES
+            for input_file in sorted(glob.glob('*.text-encrypted-decoded-base64')):
+                with open(input_file, 'rb') as in_file, open(input_file.replace("encrypted","decrypted"), 'wb') as out_file:
+                    decrypt(in_file, out_file, password)
+                    os.remove(input_file)
+
+            # concatenation files into 1 file
+            concatenation()
+        else:
+            print("choose encrypt or decrypt")
     else:
-        print("choose encrypt or decrypt")
-else:
-    print("file not found !")
+        print("file not found !")
